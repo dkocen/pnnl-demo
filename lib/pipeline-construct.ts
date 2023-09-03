@@ -13,22 +13,25 @@ export default class PipelineConstruct extends Construct {
     const blueprint = blueprints.EksBlueprint.builder()
     .account(account)
     .region(region)
+    .resourceProvider("HostedZone",  new blueprints.ImportHostedZoneProvider("Z02135133RB93ETC313CB"))
     .addOns(
-        new blueprints.AwsLoadBalancerControllerAddOn,
+        new blueprints.AwsLoadBalancerControllerAddOn(),
         new blueprints.ExternalDnsAddOn({
             hostedZoneResources: [
-                'test.davidkocen.com'
+                'HostedZone'
             ]
         }),
-        new blueprints.NginxAddOn,
-        new blueprints.CalicoOperatorAddOn,
-        new blueprints.MetricsServerAddOn,
-        new blueprints.ClusterAutoScalerAddOn,
-        new blueprints.ContainerInsightsAddOn
+        new blueprints.NginxAddOn(),
+        new blueprints.CalicoOperatorAddOn(),
+        new blueprints.MetricsServerAddOn(),
+        new blueprints.ClusterAutoScalerAddOn(),
+        new blueprints.ContainerInsightsAddOn(),
+        new blueprints.addons.ArgoCDAddOn()
     )
   
     blueprints.CodePipelineStack.builder()
       .name("PNNL-Demo-EKS-Pipeline")
+      .codeBuildPolicies(blueprints.DEFAULT_BUILD_POLICIES)
       .repository({
           owner: 'dkocen',
           repoUrl: 'pnnl-demo',
@@ -39,9 +42,11 @@ export default class PipelineConstruct extends Construct {
         id: "envs",
         stages: [
           { id: "dev", stackBuilder: blueprint.clone('us-west-2')},
-          { id: "test", stackBuilder: blueprint.clone('us-east-2')},
-          { id: "prod", stackBuilder: blueprint.clone('us-east-1')}
+          { id: "prod", stackBuilder: blueprint.clone('us-west-1')}
         ]
       })
+      .build(scope, "PipelineStack", {
+        env: props?.env
+      });
   }
 }
