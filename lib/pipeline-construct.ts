@@ -2,6 +2,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
+import { PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam';
 
 export default class PipelineConstruct extends Construct {
   constructor(scope: Construct, id: string, props?: cdk.StackProps){
@@ -10,28 +11,28 @@ export default class PipelineConstruct extends Construct {
     const account = props?.env?.account!;
     const region = props?.env?.region!;
 
+    const buildPolicy = new PolicyStatement({
+      resources: ['*'],
+      actions: ['*'],
+      effect: Effect.ALLOW
+    })
+
     const blueprint = blueprints.EksBlueprint.builder()
     .account(account)
     .region(region)
-    .resourceProvider("HostedZone",  new blueprints.ImportHostedZoneProvider("Z02135133RB93ETC313CB"))
+    .version('auto')
     .addOns(
-        new blueprints.AwsLoadBalancerControllerAddOn(),
-        new blueprints.ExternalDnsAddOn({
-            hostedZoneResources: [
-                'HostedZone'
-            ]
-        }),
-        new blueprints.NginxAddOn(),
-        new blueprints.CalicoOperatorAddOn(),
-        new blueprints.MetricsServerAddOn(),
-        new blueprints.ClusterAutoScalerAddOn(),
-        new blueprints.ContainerInsightsAddOn(),
-        new blueprints.addons.ArgoCDAddOn()
+        new blueprints.addons.AwsLoadBalancerControllerAddOn(),
+        new blueprints.addons.NginxAddOn(),
+        new blueprints.addons.CalicoOperatorAddOn(),
+        new blueprints.addons.ClusterAutoScalerAddOn(),
     )
   
     blueprints.CodePipelineStack.builder()
       .name("PNNL-Demo-EKS-Pipeline")
-      .codeBuildPolicies(blueprints.DEFAULT_BUILD_POLICIES)
+      .codeBuildPolicies([
+        buildPolicy
+      ])
       .repository({
           owner: 'dkocen',
           repoUrl: 'pnnl-demo',
