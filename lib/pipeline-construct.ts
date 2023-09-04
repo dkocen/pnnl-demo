@@ -12,6 +12,7 @@ export default class PipelineConstruct extends Construct {
     const account = props?.env?.account!;
     const region = props?.env?.region!;
 
+    // For example purposes only. Always use least privilege :)
     const buildPolicy = new PolicyStatement({
       resources: ['*'],
       actions: ['*'],
@@ -54,7 +55,6 @@ export default class PipelineConstruct extends Construct {
         id: "envs",
         stages: [
           { id: "dev", stackBuilder: blueprint.clone('us-west-2')},
-          { id: "prod", stackBuilder: blueprint.clone('us-west-1')}
         ]
       })
       .build(scope, "PipelineStack", {
