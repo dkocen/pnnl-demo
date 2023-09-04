@@ -3,6 +3,7 @@ import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import * as blueprints from '@aws-quickstart/eks-blueprints';
 import { PolicyStatement, Effect } from 'aws-cdk-lib/aws-iam';
+import { ArnPrincipal } from 'aws-cdk-lib/aws-iam';
 
 export default class PipelineConstruct extends Construct {
   constructor(scope: Construct, id: string, props?: cdk.StackProps){
@@ -27,6 +28,12 @@ export default class PipelineConstruct extends Construct {
         new blueprints.addons.CalicoOperatorAddOn(),
         new blueprints.addons.ClusterAutoScalerAddOn(),
     )
+    .teams(new blueprints.PlatformTeam({
+      name: 'admin-team',
+      users: [
+        new ArnPrincipal('arn:aws:iam::274344030317:user/dkocen')
+      ] 
+    }))
   
     blueprints.CodePipelineStack.builder()
       .name("PNNL-Demo-EKS-Pipeline")
