@@ -27,6 +27,10 @@ export default class PipelineConstruct extends Construct {
         new blueprints.addons.NginxAddOn(),
         new blueprints.addons.CalicoOperatorAddOn(),
         new blueprints.addons.ClusterAutoScalerAddOn(),
+        new blueprints.addons.VpcCniAddOn(),
+        new blueprints.addons.CoreDnsAddOn(),
+        new blueprints.addons.KubeProxyAddOn(),
+        new blueprints.addons.ArgoCDAddOn()
     )
     .teams(new blueprints.PlatformTeam({
       name: 'admin-team',
